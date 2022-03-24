@@ -59,7 +59,7 @@ links[24].click()
 page_load = WebDriverWait(driver, 30).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'chat-line__message'))
 )
-chat_list = {}
+chat_list = []
 
 for i in range(2):
     print("start collection")
