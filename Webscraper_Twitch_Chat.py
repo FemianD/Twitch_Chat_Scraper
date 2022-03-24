@@ -22,21 +22,22 @@ page_load = WebDriverWait(driver, 15).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'common-centered-column'))
 )
 time.sleep(2)
-inputElement = driver.find_element(By.XPATH,'(//input[@type="search"])[1]')
-inputElement.send_keys(stream)
+input_search = driver.find_element(By.XPATH,'(//input[@type="search"])[1]')
+input_search.send_keys(stream)
 time.sleep(2)
-search_results = []
-searches = driver.find_elements_by_xpath("//a[@href]")
-for search in searches:
-    print(search.get_attribute("href"))
-    search_results.append(search)
-search_results[5].click()
+
+page_results = []
+result_links = driver.find_elements_by_xpath("//a[@href]")
+for links in result_links:
+    print(links.get_attribute("href"))
+    page_results.append(links)
+page_results[6].click()
 time.sleep(2)
 
 #Filter english tag
-inputElement = driver.find_element(By.ID, "dropdown-search-input")
-print(inputElement)
-inputElement.send_keys("English")
+filter = driver.find_element(By.ID, "dropdown-search-input")
+print(filter)
+filter.send_keys("English")
 time.sleep(2)
 tags=[]
 tag_content = driver.find_elements(By.CLASS_NAME, "simplebar-content")
@@ -58,11 +59,11 @@ links[24].click()
 page_load = WebDriverWait(driver, 30).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'chat-line__message'))
 )
-chat_list = []
+chat_list = {}
 
-for i in range(3):
+for i in range(2):
     print("start collection")
-    time.sleep(30)
+    time.sleep(10)
 
     #Store data
     stream_data = driver.page_source
