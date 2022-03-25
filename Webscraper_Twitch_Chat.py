@@ -1,5 +1,6 @@
 from email import message
 import json
+from pickletools import read_int4
 from threading import local
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -28,19 +29,25 @@ input_search = driver.find_element(By.XPATH,'(//input[@type="search"])[1]')
 input_search.send_keys(stream)
 time.sleep(2)
 
-#search_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/nav/div/div[2]/div/div/div/div/div[1]/div/button/div/div')
-#search_button.click()
+stream_cat = stream + " Category"
+print(stream)
 
-all_search_results = []
-result_links = driver.find_elements_by_xpath("//a[@href]")
-print(result_links)
-for links in result_links:
-    print(links.get_attribute("href"))
-    all_search_results.append(links)
-time.sleep(2)
+links = []
+elems = driver.find_elements_by_xpath("//a[@href]")
+for elem in elems:
+    pair = {}
+    pair['link'] = elem.get_attribute("href")
+    pair['name'] = elem.get_attribute("aria-label")
+    links.append(pair)
+correct_link_dict = (next(x for x in links if x["name"] == (stream_cat)))
+correct_link = correct_link_dict.get('link')
+print(correct_link)
+#Go to your category
+driver.get(correct_link)
+page_load = WebDriverWait(driver, 15).until(
+EC.presence_of_element_located((By.ID, "dropdown-search-input"))
+)
 
-all_search_results[6].click()
-time.sleep(2)
 #Filter english tag
 filter = driver.find_element(By.ID, "dropdown-search-input")
 print(filter)
@@ -55,14 +62,14 @@ time.sleep(2)
 
 #Click on stream
 links = []
-elems = driver.find_elements_by_xpath("//a[@href]")
-for elem in elems:
-    print(elem.get_attribute("href"))
-    links.append(elem)
+stream_links = driver.find_elements_by_xpath("//a[@href]")
+for streams in stream_links:
+    streams.get_attribute("href")
+    links.append(streams)
 
 links[24].click()
 
-#Make sure chat is loaded in - wait for enough messages with time.sleep
+4#Make sure chat is loaded in - wait for enough messages with time.sleep
 page_load = WebDriverWait(driver, 30).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'chat-line__message'))
 )
@@ -72,7 +79,6 @@ messages = {}
 for i in range(2):
     print("start collection")
     time.sleep(10)
-    stream_time_dict = {}
     #Store data
     stream_data = driver.page_source
     #Extract divs
@@ -82,10 +88,7 @@ for i in range(2):
 
     #Extract time and viewer count
     stream_time = channel_info.find('span', class_=re.compile('live-time')).text
-    stream_time_dict['stream_time'] = stream_time
-    chat_list.append(stream_time_dict)
-    #viewer_count = channel_info.find('p', class_=re.compile('"animated-channel-viewers-count"')).text
-    #chat_list.append(viewer_count)
+    chat_list.append(stream_time)
     
     #Extract chat outputs to list
     for chat_selector in chats_selector:
@@ -112,6 +115,7 @@ for i in range(2):
         except:
             chats['badge(s)'] = "N/A"
         #Emote(s)
+
         emote_list = []
         try:
             emote_divs = chat_selector.find_all('img', class_='chat-image chat-line__message--emote')
@@ -129,5 +133,9 @@ for i in range(2):
 json = json.dumps(messages, indent=4)
 print(json)
 print("Stream scraping is done!")
+
+with open("twitch_chat_json", "w") as outfile:
+    outfile.write(json)
+
 
 driver.close()
