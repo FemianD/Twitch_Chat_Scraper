@@ -1,4 +1,6 @@
+from email import message
 import json
+from threading import local
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -26,14 +28,19 @@ input_search = driver.find_element(By.XPATH,'(//input[@type="search"])[1]')
 input_search.send_keys(stream)
 time.sleep(2)
 
-page_results = []
+#search_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/nav/div/div[2]/div/div/div/div/div[1]/div/button/div/div')
+#search_button.click()
+
+all_search_results = []
 result_links = driver.find_elements_by_xpath("//a[@href]")
+print(result_links)
 for links in result_links:
     print(links.get_attribute("href"))
-    page_results.append(links)
-page_results[6].click()
+    all_search_results.append(links)
 time.sleep(2)
 
+all_search_results[6].click()
+time.sleep(2)
 #Filter english tag
 filter = driver.find_element(By.ID, "dropdown-search-input")
 print(filter)
@@ -60,14 +67,14 @@ page_load = WebDriverWait(driver, 30).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'chat-line__message'))
 )
 chat_list = []
+messages = {}
 
 for i in range(2):
     print("start collection")
     time.sleep(10)
-
+    stream_time_dict = {}
     #Store data
     stream_data = driver.page_source
-
     #Extract divs
     soup = BeautifulSoup(stream_data, 'lxml')
     chats_selector = soup.find_all('div', class_='chat-line__message')
@@ -75,25 +82,25 @@ for i in range(2):
 
     #Extract time and viewer count
     stream_time = channel_info.find('span', class_=re.compile('live-time')).text
-    chat_list.append(stream_time)
+    stream_time_dict['stream_time'] = stream_time
+    chat_list.append(stream_time_dict)
     #viewer_count = channel_info.find('p', class_=re.compile('"animated-channel-viewers-count"')).text
     #chat_list.append(viewer_count)
-
+    
     #Extract chat outputs to list
     for chat_selector in chats_selector:
         chats = {}
-
         #ID
         id_span = chat_selector.find('span', class_=re.compile('chat-author__display-name')).text
-        chats['Id'] = hash(id_span)
+        chats['id'] = hash(id_span)
 
         #Message
         chat_span = chat_selector.find('span', class_='text-fragment')
         try:
-            chats['Message'] = chat_selector.find('span', class_=re.compile('text-fragment')).text      
+            chats['message'] = chat_selector.find('span', class_=re.compile('text-fragment')).text      
         except:
-            chats['Message'] = "N/A"     
-        
+            chats['message'] = "N/A"     
+
         #Badge(s)
         badge_list = []
         try:
@@ -101,9 +108,9 @@ for i in range(2):
             for badge_div in badge_divs:
                 badge = badge_div['alt']
                 badge_list.append(badge)  
+            chats['badge(s)'] = badge_list
         except:
-            chats['Badge(s)'] = "N/A"
-        chats['Badge(s)'] = badge_list
+            chats['badge(s)'] = "N/A"
         #Emote(s)
         emote_list = []
         try:
@@ -111,16 +118,15 @@ for i in range(2):
             for emote_div in emote_divs:
                 emote = emote_div['alt']
                 emote_list.append(emote)
-        
         except:
             emote_list.append("No emote")
-        chats['Emote(s)'] = emote_list
-
+        
+        chats['emote(s)'] = emote_list
         chat_list.append(chats)
-    print(chat_list)
+        messages['messages'] = chat_list
     print("1 minute loop is done!")
 
-json = json.dumps(chat_list)
+json = json.dumps(messages, indent=4)
 print(json)
 print("Stream scraping is done!")
 
