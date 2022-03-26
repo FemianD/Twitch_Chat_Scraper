@@ -69,7 +69,7 @@ for streams in stream_links:
 
 links[24].click()
 
-4#Make sure chat is loaded in - wait for enough messages with time.sleep
+#Make sure chat is loaded in - wait for enough messages with time.sleep
 page_load = WebDriverWait(driver, 30).until(
 EC.presence_of_element_located((By.CLASS_NAME, 'chat-line__message'))
 )
