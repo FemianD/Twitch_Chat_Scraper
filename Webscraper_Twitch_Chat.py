@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import re
 import time
@@ -16,8 +17,7 @@ import time
 stream = input("Which game do you want to scrape?" )
 
 #driver = webdriver.Chrome()
-s=Service('C:\Program Files (x86)\chromedriver.exe')
-driver = webdriver.Chrome(service=s)
+driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.get("https://www.twitch.tv/")
 
 #Going to your game or stream!
