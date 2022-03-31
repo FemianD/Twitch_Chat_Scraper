@@ -1,6 +1,6 @@
 # Twitch_Chat_Scraper
 
-##Install before using:
+## Install before using:
 
 ```{r]
 def install(package):
