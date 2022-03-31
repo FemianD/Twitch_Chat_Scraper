@@ -1,7 +1,6 @@
 from email import message
 import json
 from pickletools import read_int4
-from threading import local
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -12,6 +11,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import re
 import time
+import pandas as pd
+import csv 
+from tabulate import tabulate
 
 #Lets start! What do you want to scrape?
 stream = input("Which game do you want to scrape?" )
@@ -82,9 +84,9 @@ chat_list_all = []
 badge_list_all = []
 users_all = []
 
-for i in range(2):
+for i in range(120):
     print("start collection")
-    time.sleep(10)
+    time.sleep(60)
     #Store data
     stream_data = driver.page_source
     #Extract divs
@@ -156,3 +158,20 @@ with open("twitch_chat_json", "w") as outfile:
     outfile.write(json)
 
 driver.close()
+
+
+#Create descriptive table about the data
+emote = pd.DataFrame(emote_list_all)
+badge = pd.DataFrame(badge_list_all)
+chat = pd.DataFrame(chat_list_all)
+users = pd.DataFrame(users_all)
+new_users = set(users_all)
+
+table = [['Number of emotes', len(emote)], ['Number of badges', len(badge)], ['Number of chatmessages', len(chat)], ['Number of users', len(users)], ['Number of unique users', len(new_users)]]
+print('Descriptive Table:')
+print(tabulate(table, tablefmt='fancy_grid'))
+
+with open("twitch_data_statistics.csv", "w", encoding = 'utf-8') as csv_file: 
+    writer = csv.writer(csv_file, delimiter = ";")
+    writer.writerow(table)
+print('done!')
